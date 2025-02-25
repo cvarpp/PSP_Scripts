@@ -1,0 +1,33 @@
+#!/bin/bash
+#BSUB -J star_index
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 10
+#BSUB -R rusage[mem=8000]
+#BSUB -W 00:45
+#BSUB -o ./star_index/star_index_build.out
+#BSUB -eo ./star_index/bowtie2_index_build.err
+#BSUB -L /bin/bash
+
+# Load required modules
+module load star #star aligner,v=2.7.11b
+
+# Variables
+REFERENCE_GENOME="APOBEC3A_H.fa"
+INDEX_NAME="${REFERENCE_GENOME%.*}"
+
+# Create output directory
+output_dir="star_index/$INDEX_NAME/"
+mkdir -p "$output_dir"
+
+# Paths
+REF_PATH="./$REFERENCE_GENOME"
+
+# Output directory logging
+echo "STAR index will be built at: $output_dir"
+
+# Run STAR to generate genome index
+STAR --runTHreadN 10 --runMode genomeGenerate --genomeDir "$output_dir" --genomeFastaFiles "$REF_PATH" --genomeSAindexNbases 7
+
+
+
