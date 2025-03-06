@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# LSF job directives
+#BSUB -J miniMap_align              # Job name
+#BSUB -P acc_pMorpheus                # Project name
+#BSUB -q express                      # Queue name
+#BSUB -n 10                           # Number of cores
+#BSUB -R "rusage[mem=3000]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 02:00                        # Walltime (HH:MM)
+#BSUB -o ./8_miniMap/minimap2.stdout # Standard output file
+#BSUB -eo ./8_miniMap/minimap2.stderr # Standard error file
+#BSUB -L /bin/bash                    # Shell to use
+
+# --- Setup ---
+# Define variables
+reference="./ref_seq/APOBEC3A_H.fa"
+output_dir="8_miniMap"
+index_file="${reference##*/}"
+suffix=".sam"
+
+# Create output directories
+mkdir -p "$output_dir"
+mkdir -p "$output_dir/$index_file"
+#mkdir -p ./3_bowtie2/output
+
+# Load necessary modules
+module load minimap2
+
+# --- Main Processing Loop ---
+for fullpath in ./0_trimmed/MT4*_2.fastq.gz
+do
+    # Sleep to avoid overloading the system
+    sleep 0.1
+
+    # Extract information from file path
+    bar_directory="${fullpath%/*}"              # Directory containing the input file
+    filename="${fullpath##*/}"                  # File name (e.g., "13_MockUn_trimmed_2.fastq.gz")
+    sample="${filename%%_2.fastq.gz}"           # Remove "_2.fastq.gz" to get base name (e.g., "13_MockUn_trimmed")
+
+
+    # Define input file names
+    in1="${bar_directory}/${sample}_1.fastq.gz"
+    in2="${bar_directory}/${sample}_2.fastq.gz"
+
+    # Define output file name
+    output_file="$output_dir/$index_file/${sample}${suffix}"
+
+    echo "Processing sample: $sample"
+
+    minimap2 -ax sr "$reference" "$in1" "$in2" > "$output_file"      # short genomic paired-end reads
+
+
+    echo "Finished processing: $sample"
+done
+
+echo "All samples have been processed successfully!"

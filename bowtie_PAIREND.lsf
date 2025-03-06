@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# LSF job directives
+#BSUB -J bowtie_batch                # Job name
+#BSUB -P acc_pMorpheus               # Project name
+#BSUB -q express                     # Queue name
+#BSUB -n 10                          # Number of cores
+#BSUB -R "rusage[mem=5000]"          # Memory requirements
+#BSUB -R "span[hosts=1]"             # All cores on the same node
+#BSUB -W 05:00                       # Walltime (HH:MM)
+#BSUB -o ./9_bowtie/bowtie.stdout     # Standard output file
+#BSUB -eo ./9_bowtie/bowtie.stderr    # Standard error file
+#BSUB -L /bin/bash                   # Shell to use
+
+# --- Setup ---
+# Define variables
+reference="./ref_seq/bowtie_index/chr22/chr22"  # Ensure this index was built with Bowtie-build
+output_dir="9_bowtie"
+index_file="${reference##*/}"
+suffix=".sam"
+
+# Create output directories
+mkdir -p "$output_dir"
+mkdir -p "$output_dir/$index_file"
+
+# Load necessary modules
+module load bowtie
+
+# --- Main Processing Loop ---
+for fullpath in ./0_trimmed/MT4*_2.fastq.gz
+do
+    # Sleep to avoid overloading the system
+    sleep 0.1
+
+    # Extract information from file path
+    bar_directory="${fullpath%/*}"              # Directory containing the input file
+    filename="${fullpath##*/}"                    # File name (e.g., "13_MockUn_trimmed_2.fastq.gz")
+    base="${filename%%_2.fastq.gz}"               # Remove "_2.fastq.gz" to get base name (e.g., "13_MockUn_trimmed")
+    sample="$base"                                # Cleaned sample name
+
+    # Define input file names
+    in1="${bar_directory}/${sample}_1.fastq.gz"
+    in2="${bar_directory}/${sample}_2.fastq.gz"
+
+    # Define output file name and log file name
+    output_file="$output_dir/$index_file/${sample}${suffix}"
+    log_file="$output_dir/$index_file/${base}.bowtie.log"
+    echo "Processing sample: $sample"
+
+    # Run Bowtie (version 1)
+    bowtie -x "$reference" -1 "$in1" -2 "$in2" -S "$output_file" \
+        -q -p 10 --no-unal --chunkmbs 200 2> >(sed "s/^/[base] /" > "$log_file")
+
+    echo "Finished processing: $sample"
+done
