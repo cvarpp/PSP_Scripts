@@ -3,6 +3,7 @@
 #BSUB -P acc_pMorpheus
 #BSUB -q express
 #BSUB -n 10
+#BSUB -R "span[hosts=1]"             # All cores on the same node
 #BSUB -R rusage[mem=8000]
 #BSUB -W 00:45
 #BSUB -o ./bowtie2_index/bowtie2_kallisto_build.out
