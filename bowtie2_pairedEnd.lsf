@@ -52,7 +52,9 @@ do
 
     # Run Bowtie2
     bowtie2 -x "$reference" -1 "$in1" -2 "$in2" \
-    -S "$output_file" -q -p 10 --local --no-unal
+    -S "$output_file" -q -p 10 \
+    #--local \ #Use only if resource limited or think of adaptor was not removed well
+    --no-unal
 
     # Optional: Run additional Python scripts (commented out by default)
     # python ./tools/sam_bin_split.py -i "$output_file" -o "$output_dir/$index_file/" -breaks 0,10,20,30,40,50,60
