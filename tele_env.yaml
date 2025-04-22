@@ -1,0 +1,6 @@
+name: tele_env
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - telescope=1.0.3
