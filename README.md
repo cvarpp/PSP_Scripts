@@ -11,5 +11,6 @@ LSF scripts and more
 | moveFiles.lsf | Move files (e.i., sample_1.fastq.gz) and into sample directories. Check to ensure naming conventions are compatible.      |
 | star_build.lsf | Create a STAR index for STAR aligner. |
 | star_pairedEnd.lsf | Conduct STAR paired-end alignment using STAR aligner. |
-| wig_to_tsv_low_mem.py | Python script that can be used to generate tsv files from bigWig files to a reference (i.e., FASTA) that was aligned to. |
+| wig_to_tsv_low_mem.py | Python script that can be used to generate tsv files from bigWig files to a reference (i.e., FASTA) that was aligned to. 
 | Somatic Mutation Pipeline | A pipeline that allows you to detect somatic mutations between a "normal" and "experimental" group. |
+
