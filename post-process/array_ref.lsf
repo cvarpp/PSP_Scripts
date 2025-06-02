@@ -1,0 +1,23 @@
+#!/bin/bash
+#BSUB -oo tele_logs/out.%J.%I.txt
+#BSUB -eo tele_logs/err.%J.%I.txt
+#BSUB -n 1
+#BSUB -W 2:00
+#BSUB -E "mkdir -p -m 700 /dev/shm/$LSB_JOBID"
+#BSUB -Ep "rm -rf /dev/shm/$LSB_JOBID;"
+#BSUB -J bulkTelescope[1-60]
+#BSUB -q express
+#BSUB -P acc_HERVP
+#BSUB -R rusage[mem=16000]
+
+FNAME=$(tail -n +$LSB_JOBINDEX prefixes_uglia.txt | head -n 1)
+
+echo $FNAME
+
+samtools collate Uglia_STAR/align_$FNAME.sortedByCoord.out.bam -o collated/$FNAME.collated.bam
+
+echo "Collated"
+
+telescope assign --exp_tag $FNAME --updated_sam --outdir tele_out collated/$FNAME.collated.bam hg38.HERV.gtf
+
+echo "Assigned"

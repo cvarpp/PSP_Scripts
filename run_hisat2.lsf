@@ -1,0 +1,16 @@
+#!/bin/bash
+#BSUB -oo logs/out.hisat2.%J.txt
+#BSUB -eo logs/err.hisat2.%J.txt
+#BSUB -n 18
+#BSUB -W 08:00
+#BSUB -E "mkdir -p -m 700 /dev/shm/$LSB_JOBID"
+#BSUB -Ep "rm -rf /dev/shm/$LSB_JOBID;"
+#BSUB -J singleHisat2_%J
+#BSUB -q express
+#BSUB -P acc_HERVP
+#BSUB -R rusage[mem=3000]
+#BSUB -R "span[hosts=1]"
+
+BAM_PREFIX=my_arg_1
+
+hisat2 --score-min L,0,-0.14 -k 100 -x hg38 -1 "cogent_demux_longRun/cogent_demux_longRun_${BAM_PREFIX}_R1.fastq.gz" -2 "cogent_demux_longRun/cogent_demux_longRun_${BAM_PREFIX}_R2.fastq.gz" -p 34 | samtools view -b > "mapped_3.23/${BAM_PREFIX}.bam"

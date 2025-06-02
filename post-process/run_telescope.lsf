@@ -1,0 +1,16 @@
+#!/bin/bash
+#BSUB -oo logs/out.%J.txt
+#BSUB -eo logs/err.%J.txt
+#BSUB -n 1
+#BSUB -W 08:00
+#BSUB -E "mkdir -p -m 700 /dev/shm/$LSB_JOBID"
+#BSUB -Ep "rm -rf /dev/shm/$LSB_JOBID;"
+#BSUB -J singleTelescope_%J
+#BSUB -q express
+#BSUB -P acc_HERVP
+#BSUB -R rusage[mem=16000]
+
+BAM_PREFIX=my_arg_1
+GTF=my_arg_2
+
+telescope assign --exp_tag "${BAM_PREFIX}_${GTF}" --updated_sam --outdir tele_out mapped_3.23/$BAM_PREFIX.bam $GTF
