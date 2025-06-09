@@ -3,10 +3,7 @@
 #BSUB -P acc_pMorpheus
 #BSUB -q express
 #BSUB -n 10
-<<<<<<< HEAD
-=======
 #BSUB -R "span[hosts=1]"             # All cores on the same node
->>>>>>> castleGreySkull
 #BSUB -R rusage[mem=8000]
 #BSUB -W 00:45
 #BSUB -o ./bowtie2_index/bowtie2_kallisto_build.out
@@ -37,8 +34,4 @@ echo "Bowtie2 index will be built at: $BOWTIE2_INDEX_PATH"
 bowtie2-build --threads 10 -f "$REFERENCE_GENOME" "$BOWTIE2_INDEX_PATH"
 
 # Run kallisto index
-<<<<<<< HEAD
 #kallisto index -k 11 -i "$KALLISTO_INDEX_PATH" "$REFERENCE_GENOME"
-=======
-#kallisto index -k 11 -i "$KALLISTO_INDEX_PATH" "$REFERENCE_GENOME"
->>>>>>> castleGreySkull

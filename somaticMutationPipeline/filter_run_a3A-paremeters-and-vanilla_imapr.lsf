@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# LSF job directives
+#BSUB -J imapr                # Job name
+#BSUB -P acc_pMorpheus         # Project name
+#BSUB -q express               # Queue name
+#BSUB -n 5                    # Number of cores
+#BSUB -R "rusage[mem=2.5G]"    # Memory requirements
+#BSUB -R "span[hosts=1]"       # All cores on the same node
+#BSUB -W 1:00                 # Walltime (HH:MM)
+#BSUB -o /sc/arion/work/penan08/log_files/imapr_%J.stdout  # Standard output file
+#BSUB -eo /sc/arion/work/penan08/log_files/imapr_%J.stderr   # Standard error file
+#BSUB -L /bin/bash             # Shell to use
+
+
+
+# -------- Set up -------------
+# Load modules and activate conda environment
+module load anaconda3/latest
+# Use the following if you have a newer conda version:
+# conda activate apobec3_project
+source activate apobec3_project
+
+module load samtools
+module load bcftools
+module load java
+module load hisat2
+
+
+# ------- Variables and PATHs setup -----------
+# Path to pipeline txt
+inputDir="/sc/arion/work/penan08/4_somatic_mutationAnalysis/MT4_sample_input/"
+
+
+# Path to IMAPR directory
+impar_path="/sc/arion/work/penan08/tools/my_apps/imapr_v2.0"
+
+# Define full paths to each script
+script_a3a="${impar_path}/imapr_a3aParameters_filteringOnly.sh"
+script_vanilla="${impar_path}/imapr_filteringOnly.sh"
+
+#-------- Checking the scripts exist -----------
+# Pre-check: make sure both scripts exist and are executable
+for script in "$script_a3a" "$script_vanilla"; do
+  if [[ ! -x "$script" ]]; then
+    echo "ERROR: Cannot find or execute IMAPR script: $script" >&2
+    exit 1
+  fi
+done
+
+# ------ Run the scrpts -----------
+for pipeline_txt in "$inputDir"/*.txt; do
+  echo "Processing $pipeline_txt …"
+  if grep -q "a3a-parameters" "$pipeline_txt"; then
+    bash "$script_a3a" "$pipeline_txt"
+  else
+    bash "$script_vanilla" "$pipeline_txt"
+  fi
+  echo "Done $pipeline_txt"
+
+done
