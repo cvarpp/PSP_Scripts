@@ -1,0 +1,54 @@
+#!/bin/bash
+#BSUB -J run_ExpHuntDN
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 2
+#BSUB -R "rusage[mem=5G]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 10:00
+#BSUB -o /sc/arion/work/penan08/log_files/ExpHuntDeNovo_%J.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/ExpHuntDeNovo_%J.stderr
+#BSUB -L /bin/bash
+
+
+
+
+module load expansionhunterdenovo
+
+#---working dir ---
+working_dir="/sc/arion/projects/pMorpheus/noah/3_APOBEC3_analysis"
+
+#--- Input dir ----
+
+input_dir="$working_dir/STAR_output/apobec3_sep_reps/BAM_output/BAM_withRG_output/mergedBAM"
+
+
+#--- output_dir ----
+
+
+output_dir="$working_dir/ExpansionHunterDeNovo_output/"
+mkdir -p $output_dir
+
+
+#--- Reference file ----
+fasta_ref="/sc/arion/work/penan08/ref_seq/GRCh38.p13/GRCh38.p13.genome.fa"
+
+echo "Running ExpansitonHunter DeNovo"
+
+
+for file in $iput_dir/*bam; do
+
+    bamFile=$(basename "$file")
+    echo "Analzying: $bamFile"
+
+    sampleName="$bamFile%sorted.bam"
+
+    # ExpansionHunterDenovo profile \
+    #         --reads $inputdir/input.bam \
+    #         --reference $fasta_ref \
+    #         --output-prefix $output_dir/$sample \
+    #         --min-anchor-mapq 50 \
+    #         --max-irr-mapq 40 \
+    #         --log-reads
+
+done

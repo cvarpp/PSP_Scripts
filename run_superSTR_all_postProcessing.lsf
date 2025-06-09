@@ -1,0 +1,48 @@
+#!/bin/bash
+#BSUB -J superSTR_postProc
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 12
+#BSUB -R "rusage[mem=500]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 10:00
+#BSUB -o /sc/arion/work/penan08/log_files/superSTR_postProc_%J.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/superSTR_postProc_%J.stderr
+#BSUB -L /bin/bash
+
+#--- Load modules ----
+echo "######## Activating conda enviroiment superSTR ########"
+module load anaconda3
+source activate superSTR
+
+
+#----- Input dir -----
+input_dir="/sc/arion/projects/pMorpheus/noah/3_APOBEC3_analysis/superSTR_output/"
+
+
+#----- Output dir ----
+output_dir="/sc/arion/projects/pMorpheus/noah/3_APOBEC3_analysis/superSTR_processed/"
+mkdir -p $output_dir
+
+#--- manifest ----
+manifest_dir="/sc/arion/work/penan08/5_huntingtonProject/"
+
+#--- SuperSTR dir ----
+superSTRdir="/sc/arion/work/penan08/tools/my_apps/superSTR"
+
+#---- Run ------
+echo "######## Running SuperSTR ########"
+
+#Running multiparse
+python $superSTRdir/Python/multiparse.py -@ 12 --output "$output_dir" --manifest "$manifest_dir/MT4-A3A-NT_manifest.tsv" --clobber
+
+#Running screen 
+python $superSTRdir/Python/screen.py --manifest "$manifest_dir/MT4-A3A-NT_manifest.tsv" -i "$output_dir" -o screening.tsv --controllab NT --swaplab --min_thresh 1
+
+#Running outliers 
+python $superSTRdir/Python/outliers.py -i "$output_dir" -o outliers.tsv --max_motif 6 --bootstrapCI --controllab NT --manifest "$manifest_dir/MT4-A3A-NT_manifest.tsv" --min_len 75 --max_len 100 -is
+
+#Running Visualizataion
+python $superSTRdir/Python/visualise.py -i $output_dir/motifs/3mers/AGC.csv -o AGC.pdf --manifest "$manifest_dir/MT4-A3A-NT_manifest.tsv" --aff_lab A3A --ctrl_lab NT
+
+echo "Done"

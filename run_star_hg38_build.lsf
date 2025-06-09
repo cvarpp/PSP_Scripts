@@ -1,0 +1,45 @@
+#!/bin/bash
+#BSUB -J starAlign
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 10
+#BSUB -R "rusage[mem=1G]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 6:00
+#BSUB -o /sc/arion/work/penan08/log_files/starAlignment_%J.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/starAlignment_%J.stderr
+#BSUB -L /bin/bash
+
+#--- Load modules ----
+echo "Activating STAR module "
+module load star
+
+
+#----- Genome dir -----
+GENOMEDIR="/sc/arion/work/penan08/ref_seq/"
+
+
+#----- Output dir ----
+
+star_dir="$GENOMEDIR/STAR/"
+mkdir -p $star_dir
+
+#--- genome -----
+genome_fasta="$GENOMEDIR/GRCh38.p13.genome.fa"
+genome_gtf="$GENOMEDIR/gencode.v41.annotation.gtf"
+
+#---- Run ------
+echo "Running STAR aligner"
+
+# Output directory logging
+echo "STAR index will be built at: $output_dir"
+
+# Run STAR to generate genome index
+STAR \
+    --runTHreadN 10 \
+    --runMode genomeGenerate \
+    --genomeDir "$star_dir" \
+    --genomeFastaFiles "$genome_fasta" \
+    --sjdbGTFfile "$genome_gtf" \
+
+echo "done"

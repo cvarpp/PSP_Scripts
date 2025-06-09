@@ -1,30 +1,36 @@
-#!/bin/sh
-
-
-REFERENCE_GENOME=Mouse_tRNA_rRNA_snRNAreference.fa
-
-
-INDEX_NAME="${REFERENCE_GENOME%.*}"
-mkdir -p bowtie2_index/$INDEX_NAME
-echo ./bowtie2_index/$INDEX_NAME/$INDEX_NAME
-
-bsub ./bowtie2_build.lsf $REFERENCE_GENOME ./bowtie2_index/$INDEX_NAME/$INDEX_NAME
-
-
-
 #!/bin/bash
-#BSUB -J bowtie2_build
+#BSUB -J bowtie2_kallisto_build
 #BSUB -P acc_pMorpheus
 #BSUB -q express
-#BSUB -n 4
+#BSUB -n 10
 #BSUB -R rusage[mem=8000]
-#BSUB -W 00:30
-#BSUB -o ./bowtie2_index/bowtie2_build.out
-#BSUB -eo ./bowtie2_index/bowtie2_build.err
+#BSUB -W 00:45
+#BSUB -o ./bowtie2_index/bowtie2_kallisto_build.out
+#BSUB -eo ./bowtie2_index/bowtie2_kallisto_build.err
 #BSUB -L /bin/bash
 
+# Load required modules
 module load python
+module load bowtie2
+#module load kallisto  #For small RNA seq analysis
 
-bowtie2 bowtie2-build --threads 10 -f "$1" "$2"
+# Variables
+REFERENCE_GENOME="apobec3_locus_simple.fa"
+INDEX_NAME="${REFERENCE_GENOME%.*}"
 
-../tools/kallisto/build/src/kallisto index -k 11 -i $2.idx $1
+# Create output directory
+mkdir -p bowtie2_index/$INDEX_NAME
+
+# Paths
+BOWTIE2_INDEX_PATH="./bowtie2_index/$INDEX_NAME/$INDEX_NAME"
+KALLISTO_INDEX_PATH="$BOWTIE2_INDEX_PATH.idx"
+
+# Output directory logging
+echo "Bowtie2 index will be built at: $BOWTIE2_INDEX_PATH"
+#echo "Kallisto index will be created at: $KALLISTO_INDEX_PATH"
+
+# Run bowtie2-build
+bowtie2-build --threads 10 -f "$REFERENCE_GENOME" "$BOWTIE2_INDEX_PATH"
+
+# Run kallisto index
+#kallisto index -k 11 -i "$KALLISTO_INDEX_PATH" "$REFERENCE_GENOME"

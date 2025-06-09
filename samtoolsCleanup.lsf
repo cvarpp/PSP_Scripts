@@ -1,0 +1,55 @@
+#!/bin/bash
+#BSUB -J samToolClean
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 2
+#BSUB -R "rusage[mem=5G]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 10:00
+#BSUB -o /sc/arion/work/penan08/log_files/samtoolCleanUp_%J.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/samtoolCleanUp_%J.stderr
+#BSUB -L /bin/bash
+
+
+#--- Load samtools ----
+
+module load samtools 
+
+
+#--- Input dir ----
+
+input_dir="/sc/arion/projects/pMorpheus/noah/3_APOBEC3_analysis/STAR_output/apobec3_sep_reps"
+
+#--- output dir ----
+output_dir="$input_dir/BAM_output"
+mkdir -p $output_dir
+
+
+
+#--- Running samtools clean up ---
+
+echo "Running samtools on SAM files"
+
+for sample_dir in $input_dir/*; do
+
+    echo "$sample_dir"
+    #Getting sample name from the path of sample_dir
+    sample=$(basename "$sample_dir")  
+
+    #Each folder should have an Alinged.out.sam, output from STAR 
+    samFile="$sample_dir/Aligned.out.sam" 
+
+    echo "Processing sample: $sample"
+
+    #Convert SAM to BAM, and sorting 
+    #samtools view -bS "$samFile" \
+    #    | samtools sort -o "$output_dir/${sample}.sorted.bam"
+
+    #Indexing sorted BAM 
+    #samtools index "$output_dir/${sample}.sorted.bam"
+
+
+
+done
+
+echo "Done. Output files in: $output_dir" 

@@ -1,0 +1,35 @@
+#!/bin/bash
+#BSUB -J samMergeIndex
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 2
+#BSUB -R "rusage[mem=3G]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 10:00
+#BSUB -o /sc/arion/work/penan08/log_files/samtool_mergeIndex_%J.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/samtool_mergeIndex_%J.stderr
+#BSUB -L /bin/bash
+
+set -euo pipefail
+
+#-- Load modules ----
+
+module load samtools
+
+#--working dir ---
+
+working_dir="/sc/arion/projects/pMorpheus/noah/3_APOBEC3_analysis/STAR_output/apobec3_sep_reps/BAM_output/BAM_withRG_output/"
+
+
+
+for grp in A3A, NT; do
+
+  echo "Merging all files with: $grp" 
+
+  samtools merge MT4_${grp}_merged.bam MT4_${grp}_*.rg.sorted.bam
+
+  echo "Indexing:  MT4_${grp}_merged.bam"
+
+  samtools index MT4_${grp}_merged.bam
+
+done

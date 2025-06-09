@@ -1,0 +1,26 @@
+#!/bin/bash
+#BSUB -J runScript
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 20
+#BSUB -R "rusage[mem=5000]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 06:00
+#BSUB -o /sc/arion/penan08/log_files/cogentSetUp_%J.stdout
+#BSUB -eo /sc/arion/penan08/log_files/cogentSetUp_%J.stderr
+#BSUB -L /bin/bash
+
+#module set up
+module load miniforge3
+ 
+# Run script
+path_to_script="/sc/arion/work/penan08/venv/envs/CogentAP"
+script="CogentAP_setup.sh"
+input="input.txt"
+ 
+echo "Running $path_to_script/$script"
+ 
+bash "$path_to_script/$script" "$path_to_script/$input"
+ 
+ 
+echo "Done"

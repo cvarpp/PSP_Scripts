@@ -1,0 +1,28 @@
+#!/bin/bash
+#BSUB -J copyfiles
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 5
+#BSUB -R "rusage[mem=5000]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 02:00
+#BSUB -o /sc/arion/work/log_files/copyFiles_%J.stdout
+#BSUB -eo /sc/arion/work/log_files/copyFiles_%J.stderr
+#BSUB -L /bin/bash
+
+
+
+
+# ---------- Log Info ---------- #
+echo "Moving log:"
+echo "========================"
+echo "TIME - Start:" `date +'%Y-%m-%d %r'`
+
+# Inputs 
+
+directory_mov="/sc/arion/scratch/penan08/cogent_hg38_analysis"
+output_dir="/sc/arion/projects/pMorpheus/2025-02-27_Takara_NovaSeq_TotalRNA"
+
+cp -r "$directory_mov" "$output_dir"
+
+echo "Completed move of $directory_mov to $output_dir"
