@@ -14,11 +14,6 @@
 module load miniforge3
 module load anaconda3/latest
 
-#Set up for testing
-set -euo pipefail
-IFS=$'\n\t'
-
-
 #load conda enviroment
 source activate /sc/arion/projects/pMorpheus/noah/Cogent_AP/CogentAP_tools
 
