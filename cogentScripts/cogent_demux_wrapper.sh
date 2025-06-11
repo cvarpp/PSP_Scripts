@@ -51,17 +51,21 @@ for sample in "${samples_array[@]}"; do
   		awk -F, -v s="$sample_name" '$2==s { print }' \
   		>> "$filtered_sheet"
 
-	if [[ wc -l $filtered_sheet == 1]];then 
-		echo "ERROR: Sample name is incorrect. Please check sample sheet"
-		continue 
+	# count lines (header + any matching rows)
+	line_count=$(wc -l < "$filtered_sheet")
 
-	# skip if already demuxed
-	if ls "$thisOut/${sample_name}*${sample_name}_R1.fastq.gz" 1>/dev/null 2>&1 || ls "$thisOut/${sample_name}*${sample_name}_R2.fastq.gz" 1>/dev/null 2>&1; then
-	  echo "  Cogent demuxed already. Skipping."
-	  continue
+	if [[ $line_count -le 1 ]]; then
+  		echo "ERROR: no entries for sample '$sample_name' in sample sheet. Please check your sampleSheet input." >&2
+  		continue
 	fi
 
-	# ensure inputs exist
+	# skip if already demuxed
+	# if ls "$thisOut/${sample_name}*${sample_name}_R1.fastq.gz" 1>/dev/null 2>&1 || ls "$thisOut/${sample_name}*${sample_name}_R2.fastq.gz" 1>/dev/null 2>&1; then
+	#   echo "  Cogent demuxed already. Skipping."
+	#   continue
+	# fi
+
+	# ensure read1 and read2 inputs exist
 	for f in "$read1" "$read2"; do
 	  if [[ ! -f "$f" ]]; then
 	    echo "ERROR: Input $f missing" >&2

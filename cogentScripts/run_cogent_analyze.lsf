@@ -4,6 +4,7 @@
 #BSUB -q express
 #BSUB -n 18
 #BSUB -R "rusage[mem=3000]"             # Memory requirements
+#BSUB -R "span[hosts=1]"
 #BSUB -W 08:00
 #BSUB -o /sc/arion/work/penan08/log_files/__JOB_NAME__.out
 #BSUB -eo /sc/arion/work/penan08/log_files/__JOB_NAME__.err
