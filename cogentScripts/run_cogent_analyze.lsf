@@ -4,7 +4,6 @@
 #BSUB -q express
 #BSUB -n 18
 #BSUB -R "rusage[mem=3000]"             # Memory requirements
-#BSUB -R "span[hosts=1]"
 #BSUB -W 08:00
 #BSUB -o /sc/arion/work/penan08/log_files/__JOB_NAME__.out
 #BSUB -eo /sc/arion/work/penan08/log_files/__JOB_NAME__.err
@@ -19,10 +18,9 @@ source activate /sc/arion/projects/pMorpheus/noah/Cogent_AP/CogentAP_tools
 eval "$(conda shell.bash hook)"
 
 # Run cogent demux
-/sc/arion/projects/pMorpheus/noah/Cogent_AP/cogent demux \
-    -i "__READ1__" \
-    -p "__READ2__" \
-    -b "__SAMPLE_SHEET__" \
+/sc/arion/projects/pMorpheus/noah/Cogent_AP/cogent analyze \
+    -g hg38 \
+    -i "__INPUTDIR__" \
     -t SMARTSeq_FLA_UMI \
-    -n 18 \
+    --threads 18 \
     -o "__OUTDIR__/"

@@ -32,8 +32,6 @@ for sample in "${samples_array[@]}"; do
 	  continue
 	fi
 
-	
-
 	read1="$sample/${sample_name}_1.fastq.gz"
 	read2="$sample/${sample_name}_2.fastq.gz"
 	# read1="${sample_name}_1.fastq.gz"
@@ -52,6 +50,10 @@ for sample in "${samples_array[@]}"; do
 		#Use awk on a comma-seperated file (-F), -v sets a variable s = sample_name. If a value on the second column equals s it is kept
   		awk -F, -v s="$sample_name" '$2==s { print }' \
   		>> "$filtered_sheet"
+
+	if [[ wc -l $filtered_sheet == 1]];then 
+		echo "ERROR: Sample name is incorrect. Please check sample sheet"
+		continue 
 
 	# skip if already demuxed
 	if ls "$thisOut/${sample_name}*${sample_name}_R1.fastq.gz" 1>/dev/null 2>&1 || ls "$thisOut/${sample_name}*${sample_name}_R2.fastq.gz" 1>/dev/null 2>&1; then
