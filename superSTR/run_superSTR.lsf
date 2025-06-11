@@ -1,0 +1,59 @@
+#!/bin/bash
+#BSUB -J superStar
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 3
+#BSUB -R "rusage[mem=5000]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 10:00
+#BSUB -o /sc/arion/work/penan08/log_files/superSTR_%J.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/superSTR_%J.stderr
+#BSUB -L /bin/bash
+
+#--- Load modules ----
+echo "Activating conda enviroiment "
+module load anaconda3
+source activate superSTR
+
+
+#----- Input dir -----
+input_dir="/sc/arion/projects/pMorpheus/noah/3_APOBEC3_analysis/cogent_demux"
+
+
+#----- Output dir ----
+
+output_dir="/sc/arion/projects/pMorpheus/noah/3_APOBEC3_analysis/superSTR_output/"
+mkdir -p $output_dir
+
+#---- Run ------
+echo "Running SuperSTR"
+
+for r1 in $input_dir/*_R1.fastq.gz; 
+do
+    #echo "fastq: $fastq_path"
+    # Extract information from file path
+    # Keeps everything after MT 
+    filename=$(basename "$r1" | grep -o 'MT.*')
+    #echo "filename: $filename"
+    sample=${filename%%_R*.fastq.gz}
+    echo "Analyzing sample: $sample"
+
+    mkdir -p $output_dir/$sample
+
+    # Removes eveything before MT 
+    cogent_stuff=$(basename "$r1" | grep -oP '.*(?=MT)')
+    #echo "Cogent naming: $cogent_stuff"
+
+    #Set up the read 1 and read 2 paths 
+    read_1=${cogent_stuff}${sample}_R1.fastq.gz
+    echo "read 1: $read_1"
+    read_2=${cogent_stuff}${sample}_R2.fastq.gz
+    echo "read 2: $read_2"
+
+    superstr --mode=fastq \
+    -o "$output_dir/$sample" \
+    -t 0.49 \
+    $input_dir/$read_1 $input_dir/$read_2
+
+done 
+echo "done"

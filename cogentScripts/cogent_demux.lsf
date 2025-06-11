@@ -1,0 +1,84 @@
+#!/bin/bash
+#BSUB -J cogent_demux
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 16
+#BSUB -R "rusage[mem=500]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 08:00
+#BSUB -o /sc/arion/work/penan08/log_files/cogentDemux_%J.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/cogentDemux_%J.stderr
+#BSUB -L /bin/bash
+
+#module set up
+module load miniforge3
+module load anaconda3/latest
+
+#load conda enviroment
+source activate /sc/arion/projects/pMorpheus/noah/Cogent_AP/CogentAP_tools
+
+#input directory
+inputDir="/sc/arion/projects/HERVP/2025-05-27_Takara_NovaSeq_TotalRNA"
+RNAseqRun="AN00024697"
+
+echo "Demultiplexing $RNAseqRNA fastq.gz files"
+
+# Input Files
+sampleSheet="/sc/arion/projects/pMorpheus/noah/Cogent_AP/SampleSheet/2025_05_27_Takara_SMART_RNAseqRun/HERVP_sampleSheet.csv"
+
+if [ ! -f "$sampleSheet" ]; then
+    echo "Error: File $sampleSheet not found!"
+    exit 1
+fi
+
+#OutputFiles
+outputDir="/sc/arion/projects/HERVP/2025-05-27_Takara_NovaSeq_TotalRNA/cogent_demux_output_cleanUp"
+mkdir -p $outputDir
+
+
+for sample in "${inputDir}"/*; do
+
+    sample_name=$(basename "$sample")
+    echo "Sample name: $sample_name"
+
+    outdir=$outputDir/$sample_name
+
+    # skip the Cogent output directory itself
+    if [ "$sample_name" = "cogent_demux_output" ]; then
+        echo "Ignoring Cogent output dir"
+        continue
+    fi
+
+    read1_input="${sample}/${sample_name}_1.fastq.gz"
+    read2_input="${sample}/${sample_name}_2.fastq.gz"
+    outdir="${outputDir}/${sample_name}"
+
+    # Look for Cogent output R1 or R2 in $outdir, skip if they exist 
+    if ls "${outdir}"/*"${sample_name}"_R1.fastq.gz 1> /dev/null 2>&1 \
+       || ls "${outdir}"/*"${sample_name}"_R2.fastq.gz 1> /dev/null 2>&1; then
+        echo "Cogent output files already exist for: $sample_name. Skipping."
+        continue
+    fi
+
+    # Check that the input FASTQs actually exist
+    if [ ! -f "$read1_input" ]; then
+        echo "Error: File $read1_input not found!" >&2
+        exit 1
+    fi
+    if [ ! -f "$read2_input" ]; then
+        echo "Error: File $read2_input not found!" >&2
+        exit 1
+    fi
+
+    # create output directory
+    mkdir -p "$outdir"
+
+    # run Cogent demux
+    bsub /sc/arion/projects/pMorpheus/noah/Cogent_AP/cogent demux \
+        -i "$read1_input" \
+        -p "$read2_input" \
+        -b "$sampleSheet" \
+        -t SMARTSeq_FLA_UMI \
+        -n 16 \
+        -o "$outdir/"
+done

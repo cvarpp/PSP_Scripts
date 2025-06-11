@@ -1,0 +1,44 @@
+#!/bin/bash
+#BSUB -J superStar
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 12
+#BSUB -R "rusage[mem=1G]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 10:00
+#BSUB -o /sc/arion/work/penan08/log_files/superSTR_%J.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/superSTR_%J.stderr
+#BSUB -L /bin/bash
+
+#--- Load modules ----
+echo "######## Activating conda enviroiment superSTR ########"
+module load anaconda3
+source activate superSTR
+
+
+#----- Input dir -----
+input_dir="/sc/arion/projects/pMorpheus/noah/3_APOBEC3_analysis/superSTR_output/"
+
+
+#----- Output dir ----
+output_dir="/sc/arion/projects/pMorpheus/noah/3_APOBEC3_analysis/superSTR_processed/"
+mkdir -p $output_dir
+
+#--- manifest ----
+maniest="/sc/arion/work/penan08/5_huntingtonProject/MT4-A3A-NT_manifest.tsv"
+
+#--- SuperSTR dir ----
+superSTRdir="/sc/arion/work/penan08/tools/my_apps/superSTR"
+
+#---- Run ------
+echo "######## Running SuperSTR ########"
+
+python $superSTRdir/Python/multiparse.py \
+    -@ 12 \
+    --input "$output_dir" \
+    --output "$output_dir" \
+    #-r 200 \
+    -m "$manifest"
+
+
+echo "Done"

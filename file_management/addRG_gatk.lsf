@@ -1,0 +1,56 @@
+#!/bin/bash
+#BSUB -J addRG_gatk
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 2
+#BSUB -R "rusage[mem=5G]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 10:00
+#BSUB -o /sc/arion/work/penan08/log_files/addRG_gatk_%J.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/addRG_gatk_%J.stderr
+#BSUB -L /bin/bash
+
+set -euo pipefail
+
+#-- Load modules ----
+
+module load gatk
+
+#--working dir ---
+
+working_dir="/sc/arion/projects/pMorpheus/noah/3_APOBEC3_analysis/STAR_output/apobec3_sep_reps/BAM_output"
+
+#--- output dir ----
+
+output_dir="$working_dir/BAM_withRG_output"
+mkdir -p $output_dir
+
+#List of sample names 
+samples=(
+  MT4_A3A_1
+  MT4_A3A_2
+  MT4_A3A_3
+  MT4_NT_1
+  MT4_NT_2
+  MT4_NT_3
+)
+
+#Common ReadGroup fields
+RGLB="2025-11-06_Takara_NovaSeq"
+RGPL="ILLUMINA"
+
+#Looping over the list, adding the RGID, RGLB, RGPL, RGPU, RGSM
+for S in "${samples[@]}"; do
+
+  echo "Adding Read Group Info to: $S"
+  gatk --java-options "-Xmx4g" AddOrReplaceReadGroups \
+    -I "${working_dir}/${S}.sorted.bam" \
+    -O "${output_dir}/${S}.rg.sorted.bam" \
+    --RGID "${S}_L001" \
+    --RGLB "${RGLB}" \
+    --RGPL "${RGPL}" \
+    --RGPU "${S}_L001" \
+    --RGSM "${S}"
+done
+
+echo "Done. Output in: $output_dir"

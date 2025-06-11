@@ -1,0 +1,38 @@
+#!/bin/bash
+#BSUB -J cogentAnalysis
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 48
+#BSUB -R "rusage[mem=5000]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 12:00
+#BSUB -o /sc/arion/work/penan08/log_files/cogentAnalysis.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/cogentAnalysis.stderr
+#BSUB -L /bin/bash
+
+# Module setup
+module load anaconda3/latest
+
+# Activate the CogentAP conda environment
+source activate /sc/arion/scratch/penan08/CogentAP/CogentAP_tools
+
+
+# Input files (paired fastq.gz files)
+inputDir="/sc/arion/projects/pMorpheus/2025-02-27_Takara_NovaSeq_TotalRNA/cogent_demux_longRun"
+outputDir="/sc/arion/scratch/penan08/cogent_hg38_analysis"
+
+
+#mkdir -p "$outputDir"
+
+echo "Running Cogent analysis on all fastq.gz files in $inputDir..."
+
+# Run Cogent demux with all 48 cores (multithreading)
+ /sc/arion/scratch/penan08/CogentAP/CogentAP_tools/bin/python3 \
+    /sc/arion/scratch/penan08/CogentAP/lib/cogent.py analyze \
+    -i "$inputDir" \
+    -g hg38 \
+    -t SMARTSeq_FLA_UMI \
+    --threads 48 \
+    -o "$outputDir"
+
+echo "Done"

@@ -1,0 +1,71 @@
+#!/bin/bash
+#BSUB -J ReadGroup_rm_add
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 10
+#BSUB -R "rusage[mem=5000]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 10:00
+#BSUB -o /sc/arion/work/penan08/log_files/ReadGroup_%J.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/ReadGroup_%J.stderr
+#BSUB -L /bin/bash
+
+# load modules
+module load samtools
+module load gatk  # (if needed; ensure gatk is in your module path)
+
+input_dir="/sc/arion/projects/pMorpheus/noah/3_APOBEC3_analysis/cogent_output_hg38-v41/Lisa_MT4_hg38_v41_alignment"
+output_dir="/sc/arion/projects/pMorpheus/noah/3_APOBEC3_analysis/cogent_output_hg38-v41/Lisa_MT4_hg38_v41_alignment_readGroup_cleaned"
+
+# Ensure the output directory exists
+mkdir -p "$output_dir"
+
+for bamFile in "$input_dir"/*.bam; do
+    # Extract the base file name without directory and ".bam" extension
+    baseName=$(basename "$bamFile" .hg38.aligned.bam)
+    
+    # Set up sampleName with .hg38.aligned
+    sampleName="${baseName}.hg38.aligned"
+
+    echo "Sorting ${sampleName}"
+    samtools sort -@ 8 \
+        -o "${output_dir}/${sampleName}.sorted.bam" \
+        "$bamFile"
+
+    echo "Removing ALL readgroups from header and reads in: ${sampleName}"
+    samtools view -h "${output_dir}/${sampleName}.sorted.bam" \
+      | grep -v '^@RG' \
+      | sed 's/\tRG:Z:[^[:space:]]*//g' \
+      | samtools view -b \
+          -o "${output_dir}/${sampleName}.cleanRG.sorted.bam"
+
+    echo "============================================================"
+    echo "If anything is printed below, readgroup removal did not work"
+    echo "============================================================"
+    # Check header for any RG lines
+    samtools view -H "${output_dir}/${sampleName}.cleanRG.sorted.bam" | grep '^@RG'
+    # Check reads for any RG tags (should print nothing)
+    samtools view "${output_dir}/${sampleName}.cleanRG.sorted.bam" | grep -m1 'RG:Z:'
+
+    echo "============================================================"
+    echo "=========== Adding new readgroups using GATK ==============="
+    echo "============================================================"
+
+    rgID="${sampleName}_L001"
+
+    gatk AddOrReplaceReadGroups \
+        -I "${output_dir}/${sampleName}.cleanRG.sorted.bam" \
+        -O "${output_dir}/${sampleName}.RG.sorted.bam" \
+        --RGID "${rgID}" \
+        --RGLB "2025-11-06_Takara_NovaSeq" \
+        --RGPL "ILLUMINA" \
+        --RGPU "${rgID}" \
+        --RGSM "${sampleName}"
+
+    echo "============================================================"
+    echo "===========      Added new readGroup info    ==============="
+    echo "============================================================"
+
+done
+
+echo "Done"
