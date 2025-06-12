@@ -54,6 +54,7 @@ for sample in "${samples_array[@]}"; do
 	# count lines (header + any matching rows)
 	line_count=$(wc -l < "$filtered_sheet")
 
+	#Checks if $line_count is less than or equal to 1. 
 	if [[ $line_count -le 1 ]]; then
   		echo "ERROR: no entries for sample '$sample_name' in sample sheet. Please check your sampleSheet input." >&2
   		continue
