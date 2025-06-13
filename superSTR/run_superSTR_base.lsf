@@ -1,0 +1,20 @@
+#!/bin/bash
+#BSUB -J superStar
+#BSUB -P acc_pMorpheus
+#BSUB -q express
+#BSUB -n 3
+#BSUB -R "rusage[mem=5000]"           # Memory requirements
+#BSUB -R "span[hosts=1]"              # All cores on the same node
+#BSUB -W 10:00
+#BSUB -o /sc/arion/work/penan08/log_files/___JOB_NAME__.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/__JOB_NAME__.stderr
+#BSUB -L /bin/bash
+
+#--- Load modules ----
+module load anaconda3
+source activate superSTR
+
+superstr --mode=fastq \
+    -o "__OUTDIR__" \
+    -t 0.49 \
+    "__R1__" "__R2__"
