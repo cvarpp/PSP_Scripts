@@ -60,13 +60,7 @@ for sample in "${samples_array[@]}"; do
   		continue
 	fi
 
-	# skip if already demuxed
-	# if ls "$thisOut/${sample_name}*${sample_name}_R1.fastq.gz" 1>/dev/null 2>&1 || ls "$thisOut/${sample_name}*${sample_name}_R2.fastq.gz" 1>/dev/null 2>&1; then
-	#   echo "  Cogent demuxed already. Skipping."
-	#   continue
-	# fi
 
-	# ensure read1 and read2 inputs exist
 	for f in "$read1" "$read2"; do
 	  if [[ ! -f "$f" ]]; then
 	    echo "ERROR: Input $f missing" >&2
