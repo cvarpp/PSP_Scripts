@@ -32,8 +32,6 @@ for sample in "${samples_array[@]}"; do
 	  continue
 	fi
 
-	
-
 	read1="$sample/${sample_name}_1.fastq.gz"
 	read2="$sample/${sample_name}_2.fastq.gz"
 	# read1="${sample_name}_1.fastq.gz"
@@ -53,13 +51,16 @@ for sample in "${samples_array[@]}"; do
   		awk -F, -v s="$sample_name" '$2==s { print }' \
   		>> "$filtered_sheet"
 
-	# skip if already demuxed
-	if ls "$thisOut/${sample_name}*${sample_name}_R1.fastq.gz" 1>/dev/null 2>&1 || ls "$thisOut/${sample_name}*${sample_name}_R2.fastq.gz" 1>/dev/null 2>&1; then
-	  echo "  Cogent demuxed already. Skipping."
-	  continue
+	# count lines (header + any matching rows)
+	line_count=$(wc -l < "$filtered_sheet")
+
+	#Checks if $line_count is less than or equal to 1. 
+	if [[ $line_count -le 1 ]]; then
+  		echo "ERROR: no entries for sample '$sample_name' in sample sheet. Please check your sampleSheet input." >&2
+  		continue
 	fi
 
-	# ensure inputs exist
+
 	for f in "$read1" "$read2"; do
 	  if [[ ! -f "$f" ]]; then
 	    echo "ERROR: Input $f missing" >&2

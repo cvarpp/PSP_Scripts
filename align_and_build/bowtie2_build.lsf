@@ -1,37 +1,30 @@
 #!/bin/bash
-#BSUB -J bowtie2_kallisto_build
+#BSUB -J bowtie2_build
 #BSUB -P acc_pMorpheus
 #BSUB -q express
 #BSUB -n 10
 #BSUB -R "span[hosts=1]"             # All cores on the same node
 #BSUB -R rusage[mem=8000]
-#BSUB -W 00:45
-#BSUB -o ./bowtie2_index/bowtie2_kallisto_build.out
-#BSUB -eo ./bowtie2_index/bowtie2_kallisto_build.err
+#BSUB -W 08:00
+#BSUB -o /sc/arion/work/penan08/log_files/bowtie2Build_%J.stdout
+#BSUB -eo /sc/arion/work/penan08/log_files/bowtie2Build_%J.stderr
 #BSUB -L /bin/bash
 
 # Load required modules
-module load python
 module load bowtie2
-#module load kallisto  #For small RNA seq analysis
 
 # Variables
-REFERENCE_GENOME="apobec3_locus_simple.fa"
-INDEX_NAME="${REFERENCE_GENOME%.*}"
+REFERENCE_GENOME="/sc/arion/work/penan08/5_huntingtonProject/pathoRepeatAnalysis/HTT_repeatRegion.fa"
+#Get index_name
+INDEX_NAME=$(basename "$REFERENCE_GENOME" .fa)    # strip .fa
+
 
 # Create output directory
-mkdir -p bowtie2_index/$INDEX_NAME
-
-# Paths
-BOWTIE2_INDEX_PATH="./bowtie2_index/$INDEX_NAME/$INDEX_NAME"
-KALLISTO_INDEX_PATH="$BOWTIE2_INDEX_PATH.idx"
+output_dir="/sc/arion/work/penan08/ref_seq/bowtie2_index/$INDEX_NAME"
+mkdir -p $output_dir
 
 # Output directory logging
-echo "Bowtie2 index will be built at: $BOWTIE2_INDEX_PATH"
-#echo "Kallisto index will be created at: $KALLISTO_INDEX_PATH"
+echo "Bowtie2 index will be built at: $output_dir"
 
 # Run bowtie2-build
-bowtie2-build --threads 10 -f "$REFERENCE_GENOME" "$BOWTIE2_INDEX_PATH"
-
-# Run kallisto index
-#kallisto index -k 11 -i "$KALLISTO_INDEX_PATH" "$REFERENCE_GENOME"
+bowtie2-build --threads 10 -f "$REFERENCE_GENOME" "$output_dir/$INDEX_NAME"

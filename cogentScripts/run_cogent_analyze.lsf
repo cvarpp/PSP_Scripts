@@ -13,17 +13,17 @@
 
 # load your conda environment
 module load miniforge3
-module load anaconda3/latest
+module load anaconda3/latestß
 source activate /sc/arion/projects/pMorpheus/noah/Cogent_AP/CogentAP_tools
-
 
 eval "$(conda shell.bash hook)"
 
 # Run cogent demux
-/sc/arion/projects/pMorpheus/noah/Cogent_AP/cogent demux \
-    -i "__READ1__" \
-    -p "__READ2__" \
-    -b "__SAMPLE_SHEET__" \
+#KEEP DEBUG HIGH TO RETAIN CUTADAPT TRIMMING OUTPUT
+/sc/arion/projects/pMorpheus/noah/Cogent_AP/cogent analyze \
+    -g hg38 \
+    -i "__INPUTDIR__" \
     -t SMARTSeq_FLA_UMI \
-    -n 18 \
+    --threads 18 \
+    --debug high \
     -o "__OUTDIR__/"
